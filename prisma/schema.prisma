@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  stripeCustomerId        String?
+  isActive                Boolean            @default(false)
+  accounts      Account[]
+  sessions      Session[]
+  projects      Project[]
+  organizations Organization[]
+  usersOnProjects UsersOnProjects[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Project {
+  // Using @default will allow Prisma to create the IDs for us when a new entry is added to the Projects table
+  id              Int               @id @default(autoincrement())
+  name            String
+  description     String
+  environments    Environment[]
+// Each project can only have one organization, so the project has an organizationId
+  organizationId  Int
+// This will allow us to retrieve info from the DB about the organization with organizationId equal to the field above this line
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+  usersWithAccess UsersOnProjects[]
+  users           User[]            
+}
+
+// Users can have multiple projects and projects can have multiple users, so we use a many-to-many relationship via this model.
+model UsersOnProjects {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId Int
+  createdAt DateTime @default(now())
+
+  @@id([userId, projectId])
+}
+model Environment {
+  
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  projectId   Int
+  project     Project  @relation(fields: [projectId], references: [id])
+}
+
+model Organization {
+  
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  projects    Project[]
+  users       User[]
+}
