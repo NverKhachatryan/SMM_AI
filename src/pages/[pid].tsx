@@ -1,5 +1,7 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { TextInput } from 'flowbite-react';
 import type { GetServerSidePropsContext, PreviewData } from 'next';
+import { getSession } from 'next-auth/react';
 import type { ParsedUrlQuery } from 'querystring';
 import { useState } from 'react';
 
@@ -10,7 +12,14 @@ import { prisma } from '../../prisma/shared-client';
 
 export const getServerSideProps = async ({
   params,
+  req,
+  res,
 }: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>) => {
+  const session = await getSession({ req });
+  if (!session) {
+    res.statusCode = 403;
+    return { props: { drafts: [] } };
+  }
   const project = await prisma.project.findUnique({
     where: {
       id: String(params?.pid),

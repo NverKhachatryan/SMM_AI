@@ -24,8 +24,8 @@ export default async (
 ): Promise<void> => {
   type UserHola = {
     id?: string;
-    email?: string | null;
-    stripeCustomerId?: string | undefined;
+    email?: string | undefined;
+    stripeCustomerId?: string | null | undefined;
   };
   if (req.method !== 'POST') {
     try {

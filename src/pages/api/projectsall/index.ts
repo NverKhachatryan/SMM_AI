@@ -15,7 +15,12 @@ export default async function handle(
 ) {
   const { projectName, projectDescription } = req.body;
 
-  const session = await getSession({ req });
+  type Session = {
+    user: {
+      email: string | undefined;
+    };
+  };
+  const session = (await getSession({ req })) as Session;
   const result = await prisma.project.create({
     data: {
       projectName,
