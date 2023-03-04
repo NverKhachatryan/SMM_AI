@@ -22,6 +22,11 @@ export default async (
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> => {
+  type UserHola = {
+    id?: string;
+    email?: string | null;
+    stripeCustomerId?: string | undefined;
+  };
   if (req.method !== 'POST') {
     try {
       const requestBuffer = await buffer(req);
@@ -53,7 +58,7 @@ export default async (
           console.log(subscription);
           await prisma.user.update({
             // Find the customer in our database with the Stripe customer ID linked to this purchase
-            where: {
+            where: <UserHola>{
               stripeCustomerId: subscription.customer as string,
             },
             // Update that customer so their status is now active

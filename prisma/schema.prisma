@@ -12,10 +12,10 @@ generator client {
 
 model Account {
   id                 String  @id @default(cuid())
-  userId             String
+  userId             String  @map("user_id")
   type               String
   provider           String
-  providerAccountId  String
+  providerAccountId  String   @map("provider_account_id")
   refresh_token      String?  @db.Text
   access_token       String?  @db.Text
   expires_at         Int?
@@ -37,20 +37,20 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  stripeCustomerId        String?
-  isActive                Boolean            @default(false)
-  accounts      Account[]
-  sessions      Session[]
-  projects      Project[]
-  organizations Organization[]
-  usersOnProjects UsersOnProjects[]
-}
+// model User {
+//   id            String    @id @default(cuid())
+//   name          String?
+//   email         String?   @unique
+//   emailVerified DateTime?
+//   image         String?
+//   stripeCustomerId        String?
+//   isActive                Boolean            @default(false)
+//   accounts      Account[]
+//   sessions      Session[]
+//   projects      Project[]
+//   organizations Organization[]
+//   usersOnProjects UsersOnProjects[]
+// }
 
 model VerificationToken {
   identifier String
@@ -60,44 +60,73 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Project {
-  // Using @default will allow Prisma to create the IDs for us when a new entry is added to the Projects table
-  id              Int               @id @default(autoincrement())
-  name            String
-  description     String
-  environments    Environment[]
-// Each project can only have one organization, so the project has an organizationId
-  organizationId  Int
-// This will allow us to retrieve info from the DB about the organization with organizationId equal to the field above this line
-  organization    Organization      @relation(fields: [organizationId], references: [id])
-  usersWithAccess UsersOnProjects[]
-  users           User[]            
-}
+// model Project {
+//   // Using @default will allow Prisma to create the IDs for us when a new entry is added to the Projects table
+//   id              Int               @id @default(autoincrement())
+//   name            String
+//   description     String
+//   environments    Environment[]
+// // Each project can only have one organization, so the project has an organizationId
+//   organizationId  Int
+// // This will allow us to retrieve info from the DB about the organization with organizationId equal to the field above this line
+//   organization    Organization      @relation(fields: [organizationId], references: [id])
+//   usersWithAccess UsersOnProjects[]
+//   users           User[]            
+// }
 
 // Users can have multiple projects and projects can have multiple users, so we use a many-to-many relationship via this model.
-model UsersOnProjects {
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  project   Project  @relation(fields: [projectId], references: [id])
-  projectId Int
-  createdAt DateTime @default(now())
+// model UsersOnProjects {
+//   user      User     @relation(fields: [userId], references: [id])
+//   userId    String
+//   project   Project  @relation(fields: [projectId], references: [id])
+//   projectId Int
+//   createdAt DateTime @default(now())
 
-  @@id([userId, projectId])
-}
-model Environment {
+//   @@id([userId, projectId])
+// }
+// model Environment {
   
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  projectId   Int
-  project     Project  @relation(fields: [projectId], references: [id])
+//   id          Int      @id @default(autoincrement())
+//   name        String
+//   description String
+//   projectId   Int
+//   project     Project  @relation(fields: [projectId], references: [id])
+// }
+
+// model Organization {
+  
+//   id          Int      @id @default(autoincrement())
+//   name        String
+//   description String
+//   projects    Project[]
+//   users       User[]
+// }
+
+model Project {
+  id        String     @default(cuid()) @id
+  projectName     String
+  projectDescription   String?
+  image String?
+  published Boolean? @default(false)
+  author    User?   @relation(fields: [authorId], references: [id])
+  authorId  String?
 }
 
-model Organization {
-  
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  projects    Project[]
-  users       User[]
+model User {
+  id            String       @default(cuid()) @id
+  name          String?
+  email         String?   @unique
+  createdAt     DateTime  @default(now()) @map(name: "created_at")
+  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
+  emailVerified DateTime?
+  image         String?
+  stripeCustomerId        String?
+  isActive                Boolean            @default(false)
+  @@map(name: "users")
+
+  accounts      Account[]
+  sessions      Session[]
+  projects      Project[]
+  // organizations Organization[]
+  // usersOnProjects UsersOnProjects[]
 }

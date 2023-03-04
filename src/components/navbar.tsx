@@ -5,6 +5,7 @@
 import { Disclosure } from '@headlessui/react';
 import { Avatar, Dropdown } from 'flowbite-react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
 
@@ -23,6 +24,7 @@ export default function Navbar() {
   const { data, status } = useSession();
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const imgUrl = data?.user?.image || '/img/avatar.svg';
+  const Router = useRouter();
 
   const goToCheckout = async () => {
     setIsCheckoutLoading(true);
@@ -106,8 +108,8 @@ export default function Navbar() {
 
                   <Disclosure.Panel className="my-5 flex w-full flex-wrap lg:hidden">
                     <>
-                      {navigation?.main?.map((item) => (
-                        <Link href={item?.href} legacyBehavior>
+                      {navigation?.main?.map((item, index) => (
+                        <Link href={item?.href} key={index} legacyBehavior>
                           <a className="block w-full px-4 py-2 text-sm font-medium text-gray-500 hover:bg-indigo-100 hover:text-indigo-500 focus:bg-indigo-100 focus:text-indigo-500 focus:outline-none dark:text-gray-300">
                             {item?.name}
                           </a>
@@ -125,7 +127,7 @@ export default function Navbar() {
                       {status === 'authenticated' && (
                         <button
                           className='className="mt-3 lg:ml-5" w-full rounded-md bg-indigo-600 px-6 py-2 text-center text-white'
-                          onClick={() => signOut()}
+                          onClick={() => signOut().then(() => Router.push('/'))}
                         >
                           Sign Out
                         </button>
@@ -179,12 +181,15 @@ export default function Navbar() {
                 <Dropdown.Item>
                   <Link href={'/dashboard'}>Dashboard</Link>
                 </Dropdown.Item>
+                <Dropdown.Item>
+                  <Link href={'/projects'}>Projects</Link>
+                </Dropdown.Item>
                 <Dropdown.Item>Settings</Dropdown.Item>
                 <Dropdown.Item>
                   {status === 'authenticated' ? (
                     <button
                       className="w-full rounded-md bg-indigo-600 px-6 py-2 text-center text-white"
-                      onClick={() => signOut()}
+                      onClick={() => signOut().then(() => Router.push('/'))}
                     >
                       Sign Out
                     </button>

@@ -2,6 +2,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
+// import { type } from 'os';
 import Stripe from 'stripe';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -9,8 +10,18 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     apiVersion: '2022-11-15',
   });
 
+  type User = {
+    id?: string | number | null | undefined;
+    name?: string | null | undefined;
+    email?: string | null | undefined;
+    image?: string | null | undefined;
+    stripeCustomerId?: string | undefined;
+  };
+  type Session = {
+    user?: User | null | undefined;
+  };
   // This object will contain the user's data if the user is signed in
-  const session = await getSession({ req });
+  const session = (await getSession({ req })) as Session;
 
   // Error handling
   if (!session?.user) {

@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-dupe-keys */
 /* eslint-disable global-require */
 /* eslint-disable import/no-extraneous-dependencies */
@@ -13,6 +14,13 @@ export default NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
     }),
   ],
   secret: process.env.SECRET,
@@ -29,6 +37,7 @@ export default NextAuth({
 
       // eslint-disable-next-line no-param-reassign
       session.user.isActive = dbUser.isActive;
+      session.user.stripeCustomerId = dbUser.stripeCustomerId;
       return session;
     },
   },

@@ -5,19 +5,11 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable react-hooks/rules-of-hooks */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Button, Card, Sidebar, TextInput } from 'flowbite-react';
+import { Button, Card, TextInput } from 'flowbite-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import type { GetStaticProps } from 'next';
 import React, { useState } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
-import {
-  HiArrowSmRight,
-  HiChartPie,
-  HiInbox,
-  HiShoppingBag,
-  HiTable,
-  HiUser,
-  HiViewBoards,
-} from 'react-icons/hi';
 
 import type { MetricType } from '@/components/DropDownMetric';
 import DropDownMetric from '@/components/DropDownMetric';
@@ -31,7 +23,9 @@ import LoadingDots from '@/components/LoadingDots';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Navbar from '@/components/navbar';
 import ResizablePanel from '@/components/ResizablePanel';
+import SidebarAside from '@/components/SidebarAside';
 
+import { prisma } from '../../prisma/shared-client';
 import type { GoalType } from '../components/DropDownGoals';
 import DropDownGoals from '../components/DropDownGoals';
 import type { MediaType } from '../components/DropDownMedia';
@@ -113,42 +107,7 @@ function dashboard() {
     <>
       <Navbar />
       <div className="flex flex-row">
-        <div className="w-fit">
-          <aside className="sticky top-0 h-screen md:h-screen">
-            <Sidebar aria-label="Default sidebar example">
-              <Sidebar.Items>
-                <Sidebar.ItemGroup>
-                  <Sidebar.Item href="#" icon={HiChartPie}>
-                    Dashboard
-                  </Sidebar.Item>
-                  <Sidebar.Item
-                    href="#"
-                    icon={HiViewBoards}
-                    label="Pro"
-                    labelColor="alternative"
-                  >
-                    Kanban
-                  </Sidebar.Item>
-                  <Sidebar.Item href="#" icon={HiInbox} label="3">
-                    Inbox
-                  </Sidebar.Item>
-                  <Sidebar.Item href="#" icon={HiUser}>
-                    Users
-                  </Sidebar.Item>
-                  <Sidebar.Item href="#" icon={HiShoppingBag}>
-                    Products
-                  </Sidebar.Item>
-                  <Sidebar.Item href="#" icon={HiArrowSmRight}>
-                    Sign In
-                  </Sidebar.Item>
-                  <Sidebar.Item href="#" icon={HiTable}>
-                    Sign Up
-                  </Sidebar.Item>
-                </Sidebar.ItemGroup>
-              </Sidebar.Items>
-            </Sidebar>
-          </aside>
-        </div>
+        <SidebarAside />
         <main className="mt-12 flex w-full flex-1 flex-col items-center justify-center px-4 text-center sm:mt-20">
           <div className="w-2/3">
             <div className="mb-1 flex items-center space-x-3">
@@ -303,3 +262,18 @@ function dashboard() {
 }
 
 export default dashboard;
+
+export const getStaticProps: GetStaticProps = async () => {
+  const feed = await prisma.project.findMany({
+    where: { published: true },
+    include: {
+      author: {
+        select: { name: true },
+      },
+    },
+  });
+  return {
+    props: { feed },
+    revalidate: 10,
+  };
+};
