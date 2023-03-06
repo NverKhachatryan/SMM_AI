@@ -7,6 +7,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
 import EmailProvider from 'next-auth/providers/email';
+import FacebookProvider from 'next-auth/providers/facebook';
 
 const prisma = new PrismaClient();
 
@@ -33,6 +34,10 @@ export default NextAuth({
         },
       },
       from: process.env.SMTP_FROM,
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
     }),
   ],
   secret: process.env.SECRET,
